@@ -1,0 +1,21 @@
+<%- include('partials/header'); -%>
+    <div>
+        <div>
+            <% if(data.length===0){ %>
+                <p>You Don't have anything...</p>
+                <% } else { %>
+                    <% data.forEach(function(i){ %>
+
+                        <h1>
+                            <%=i.title%>
+                        </h1>
+                        <p>
+                            <%=i.content%>
+                        </p>
+                        <br>
+                        <% }) %>
+                            <% } %>
+
+        </div>
+    </div>
+    <%- include('partials/footer'); -%>

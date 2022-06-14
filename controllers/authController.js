@@ -50,6 +50,11 @@ module.exports.signup_get = (req, res) => {
     res.render("signup");
 };
 
+module.exports.add_new_page = (req, res) => {
+    res.render("newblog");
+};
+
+
 module.exports.login_get = (req, res) => {
     res.render("login");
 };
@@ -69,6 +74,7 @@ module.exports.signup_post = async(req, res) => {
 };
 
 module.exports.login_post = async(req, res) => {
+    //const username = User.find({username: })
     const { email, password } = req.body;
 
     try {
@@ -83,25 +89,57 @@ module.exports.login_post = async(req, res) => {
 };
 //end of Login Post API
 module.exports.new_post = async(req, res) => {
-    const token = req.cookies.jwt;
-    const { title, content, category, file } = req.body;
+    const { title, content, category } = req.body;
 
-    jwt.verify(token, "net ninja secret", async(err, decodedToken) => {
-        if (err) {
-            res.send(405);
-        } else {
-            const user_id = decodedToken.id;
-            const newPost = await Post.create({
-                user_id,
-                title,
-                content,
-                category,
-            });
-        }
-    });
+    try {
+        const token = req.cookies.jwt;
 
-    res.redirect("/");
+
+        jwt.verify(token, "net ninja secret", async(err, decodedToken) => {
+            if (err) {
+                res.status(405).send(err);
+            } else {
+                const user_id = decodedToken.id;
+                const new_post = await Post.create({
+                    user_id: user_id,
+                    title: title,
+                    content: content,
+                    category: category,
+                })
+                res.redirect("/get_post");
+            }
+        });
+    } //end of try block
+    catch (err) {
+        res.json({ message: "Something went wrong", err: err });
+    } //end of catch block
+
+
 }; //end of New post api
+
+//display all the post of the user 
+
+module.exports.get_post = async(req, res) => {
+    try {
+        const token = req.cookies.jwt;
+        jwt.verify(token, "net ninja secret", async(err, decodedToken) => {
+            if (err) {
+                res.send(err);
+            } else {
+                const us = decodedToken.id;
+                const data = await Post.find({ user_id: us });
+                res.render("getpost", { data });
+
+            } //end of else
+        });
+
+    } catch (err) {
+        res.status(405).send(err);
+    } //end of catch
+
+}; //end of module
+
+
 module.exports.logout_get = (req, res) => {
     res.cookie("jwt", "", { maxAge: 1 });
     res.redirect("/");
